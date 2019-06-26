@@ -1,0 +1,149 @@
+## 星客Node2.0
+
+### 项目功能
+  - 代理转发java接口
+    - 请求参数的拦截
+    - 响应数据的转换
+  - 相关服务功能
+    - session标识服务
+    - 上传服务
+    - 微信服务
+### 项目结构
+    1. 项目结构
+      bin/
+          |-- www             // http 应用入口文件
+      config/                 // 项目环境配置文件
+          |-- default.js      // 本地开发配置文件（本地开发配置，默认与development配置一致）
+          |-- development.js  // 预发布环境配置（用于将来的预发布环境）
+          |-- production.js   // 生产环境配置
+      logs/                   // 日志目录
+      mock/                   // 接口mock
+      public/                 // 静态服务地址
+      src/                    // koa项目开发目录
+          |-- api/						// 项目所有接口
+          |
+          |-- common/			    // koa项目公用服务，类似vue中component
+          |		|--proxyService.js/			// 代理请求服务
+          |
+          |--	middlewares/		// 中间件
+          |				
+          |
+          |--	routes/		      // 路由分发目录
+          |				|--mobile/  //	移动端项目路由	
+          |       |--admin/   //	官网项目路由
+          |       |--...   
+          |--	utils/		
+          |
+          |
+          |-- App.js 					// koa应用入口
+
+      index.js                // 项目入口文件
+### 目前辅助功能
+  1. 日志
+  2. 环境分离
+  3. 代码美化及质量检查
+  4. 接口mock功能
+  5. 全面支持es6
+
+### 未来
+  1.持续集成
+  2. ...
+
+### 问题
+  1.触发登陆并且jave保存登陆成功产生sessionId（token）设置到cookie中-现存问题，只要访问接口就产品sessionId-一般node保存的token时间要短
+  2.根据模块添加前缀。比如手机端添加mobile前缀，api/mobile/*。如果有版本可以添加响应版本。如v1/api/mobile/*
+
+### 开发日志
+```
+1.cookies
+  ctx.cookies.set(name, value, [options])
+  ctx.cookies.get(name, [options])
+2.response
+  response.body
+    string 写入 Content-Type 默认为 text/html 或 text/plain
+    Buffer 写入 默认为 application/octet-stream
+    Stream 管道 application/octet-stream
+    Object || Array JSON-字符串化 application/json
+    null 无内容响应
+3.session（引用koa-session2）
+  请求路由浏览器不会在客户端生成sessionId，只有在请求的路由中设置session，客户端才会生成sessionId
+4.cookies跨域共享
+  domain: 设置cookies所在的域，设置ip，ip之间应用共享， 浏览器设置的cookie中的domain在该ip中或者域名中, 请求一次sessionId都会变化和时间也会变化, 重新生成session
+```
+
+## 腾讯云上传
+```
+1. 返回值
+{ Location: 'xingke-1252004410.cos.ap-shanghai.myqcloud.com/logo',
+  Bucket: 'xingke',
+  Key: 'logo',
+  ETag: '"398243bcfa07d6ba9f30ced6d5088dc8-1"',
+  statusCode: 200,
+  headers:
+   { 'content-type': 'application/xml',
+     'transfer-encoding': 'chunked',
+     connection: 'close',
+     date: 'Wed, 12 Dec 2018 06:26:48 GMT',
+     server: 'tencent-cos',
+     'x-cos-request-id': 'NWMxMGFhMjhfMzA5ZDA4MDlfYWU1N18xZjRjYjk=' } }
+2. 返回临时签名
+credentials: {
+sessionToken: "a8ed396e3fa5122082ae076c043163f20444142830001"
+tmpSecretId: "AKIDdMfj3zd2QP9kXgVS8fBZXWSb900scCOb"
+tmpSecretKey: "ZT3XzhW2wMu3AI5vBUSlHVszrCGMOLU1" }
+expiredTime: 1544600563
+
+{ credentials:
+   { sessionToken: 'b75e110c83b0bcaa03eebf73e4919031aea4e8e430001',
+     tmpSecretId: 'AKIDHOLc87el30tJW9Bl2S3yrO3tF4FMPgai',
+     tmpSecretKey: 'GKYjCTo2iNuiBDsB0P4i609HfFmBrQbU' },
+  expiredTime: 1544755628 }
+3. 私有云凭证
+COS.getAuthorization
+COS XML API 的请求里，私有资源操作都需要鉴权凭证 Authorization，用于判断当前请求是否合法。
+
+鉴权凭证使用方式有两种：
+
+放在 header 参数里使用，字段名：authorization
+放在 url 参数里使用，字段名：sign
+
+上传文件到存储桶中
+参数指定存储桶和位置，文件key chat/1mb.zip, 有文件夹在文件夹中，没有会创建文件夹，返回值
+ETag: ""b6d81b360a5672d80c27430f39153e2c""
+Location: "xingke-1252004410.cos.ap-shanghai.myqcloud.com/1mb.zip" 路径
+headers:
+etag: ""b6d81b360a5672d80c27430f39153e2c""
+statusCode: 200
+xingke-1252004410.cos.ap-shanghai.myqcloud.com/96x96.png
+返回的地址在浏览器中打开直接下载，在img标签中可以展示
+下载文件
+查看
+读取文件
+```
+微信素材上传
+```
+  txuploadConfig: {
+    SecretId: 'AKIDW6ZrIhw3PlyHRZKG2e4ILCrGbkjWjXql', // 云存储密钥
+    SecretKey: '1rXBg4a3LRM6Rirvs18sXUJwPjNvOgnm',
+    Bucket: 'xds-10-1-1255528578', // 空间名称
+    Region: 'ap-shanghai', // 所属区域
+  },
+formData: {
+  buffer: {
+    value: fs.readFileSync(path.join(__dirname,"./1.png")),
+      options: {
+        filename: '1.png',
+        contentType: 'image/png'
+      }
+  }
+{
+    "errcode": 42001,
+    "errmsg": "access_token expired hint: [lVYdDa0605vr29!]"
+}
+{"errcode":40001,"errmsg":"invalid credential, access_token is invalid or not latest hint: [y.5c30060vr57!]"}
+{"type":"image","media_id":"PwCAnPuOy8vTApjKtK7LxvIf209nBtoDfRP2jO4ta6bkaxUYXbNGEc6QDYiUodBK","created_at":1544699607}
+{"expireTime":1544774909,"accessToken":"16_mF73GBZ-7LaLFWTBeWYA-GK6CNmMmLZNN8ZCiRESe0lTHFjbBE7X6prizKi-z5A6lsmvAyDE8eReBurtDpD324mTQwqy2KxAXCr1arr7eS7rBWtsTFIq4mxQSqAhtiAAE2mVU5sdXDHLD18YOHFeAGAFYW"}
+{"expireTime":1544778645,"accessToken":"16_AMf6Nd32J3rG2tJ965ciwoVNUCAC9gd3jOvqskuYMDS5ZYqML5jI812ne1YwcqpKy6dWpWqiWocLTrF5xbPPUjkmYZb44qZTc4TAP_2kyB-jYl2imIIwa8yhBB2kk_6u6eiDoD5TfbAEw-vFMQOgAGATXV"} // 20181214 17.10分过期
+{"media_id":"_cwTpro4Ri_L367HbjZu7WPaKmbNVwsS0eDk1d9M0EU","url":"http:\/\/mmbiz.qpic.cn\/mmbiz_png\/lngTUaoOQtDwWTtWqlvUM0fbUTWzFc10Qj2ibubt32HDLiaGZgl881MuScCRo2DrdE9uQo8gRa0DgMjfichXyJsXQ\/0?wx_fmt=png"}
+```
+
